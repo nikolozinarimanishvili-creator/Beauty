@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>ადმინ პანელი</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1E1B2E;--paper:#FBF8FF;--lilac:#D8C8FF;--pink:#FFC3D2;--mint:#BDEBD5;--butter:#FFE49A;--hot:#FF5C8A;--muted:#5E5873;--line:#E7E0F4}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+button,a,.tab,label.btn{touch-action:manipulation}
+.tabs{position:relative}
+[hidden]{display:none!important}
+body{font-family:"Noto Sans Georgian",system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+h1{font-size:1.5rem;font-weight:800}
+h2{font-size:1.4rem;font-weight:800}
+input,select,textarea{width:100%;min-height:46px;padding:0 14px;border:1.5px solid var(--line);border-radius:14px;background:#fff}
+textarea{padding:10px 14px;min-height:84px;resize:vertical}
+input[type=checkbox]{width:22px;min-height:22px;accent-color:var(--hot)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--hot)}
+.btn{min-height:46px;padding:0 20px;border-radius:999px;border:0;background:var(--ink);color:#fff;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.btn:active{transform:scale(.96)}
+.btn.s{background:var(--lilac);color:var(--ink)}
+.btn.d{background:#FFE0E6;color:#B0173F}
+.login{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:20px}
+.lbox{width:min(380px,100%);background:#fff;border-radius:28px;padding:30px;display:grid;gap:14px;box-shadow:0 20px 60px rgba(30,27,46,.1)}
+.err{color:#B0173F;font-size:.9rem;min-height:1.3em}
+.top{position:sticky;top:0;z-index:5;background:rgba(251,248,255,.94);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);padding-top:env(safe-area-inset-top,0px)}
+.bar{display:flex;align-items:center;justify-content:space-between;height:58px;padding:0 16px;max-width:900px;margin:0 auto}
+.logo{font-weight:800;font-size:1.1rem}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:0 16px 12px;scrollbar-width:none;max-width:900px;margin:0 auto}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;min-height:44px;padding:0 18px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-weight:600;cursor:pointer}
+.tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tab b{background:var(--hot);color:#fff;border-radius:999px;padding:0 8px;margin-left:6px;font-size:.8rem}
+main{max-width:900px;margin:0 auto;padding:18px 16px calc(90px + env(safe-area-inset-bottom,0px))}
+.vh{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.card{background:#fff;border-radius:22px;padding:16px;margin-bottom:12px;display:grid;gap:10px;border-left:6px solid var(--line)}
+.card.new{border-left-color:var(--hot)}.card.ok{border-left-color:var(--mint)}.card.done{border-left-color:var(--lilac)}.card.no{border-left-color:#ccc;opacity:.7}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1 1 140px}
+.row>.btn{flex:0 0 auto}
+.muted{color:var(--muted);font-size:.88rem}
+.item{display:grid;gap:8px;padding:10px;background:var(--paper);border-radius:16px}
+.empty{padding:30px 10px;text-align:center;color:var(--muted)}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.gal .card{margin:0}
+.pic{aspect-ratio:4/5;width:100%;object-fit:cover;border-radius:16px;background:var(--lilac);display:grid;place-items:center;color:var(--muted);font-size:.85rem}
+.fl{display:grid;gap:6px;font-size:.88rem;font-weight:600;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 22px;border-radius:999px;font-size:.92rem;z-index:20;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.on{opacity:1}
+@media(min-width:700px){.item{grid-template-columns:2fr 3fr 1.2fr auto;align-items:center}}
+</style>
+</head>
+<body>
+
+<div class="login" id="login" hidden>
+  <form class="lbox" id="lf">
+    <h1>ადმინ პანელი</h1>
+    <input id="pw" type="password" autocomplete="current-password" placeholder="პაროლი" required>
+    <p class="err" id="le" role="alert"></p>
+    <button class="btn" type="submit">შესვლა</button>
+  </form>
+</div>
+
+<div id="app" hidden>
+  <div class="top">
+    <div class="bar"><span class="logo">ადმინ პანელი</span><span class="row" style="flex:none;gap:8px"><a class="btn s" href="/" target="_blank" rel="noopener">საიტი</a><button class="btn" data-a="logout">გასვლა</button></span></div>
+    <div class="tabs" id="tabs"></div>
+  </div>
+  <main id="view"></main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+var D=null,T='bookings',timers={};
+var $=function(s){return document.querySelector(s)};
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var uid=function(){return Math.random().toString(36).slice(2,10)};
+var TABS={bookings:'ჩაწერები',clients:'კლიენტები',cats:'სერვისები',gallery:'გალერეა',reviews:'შეფასებები',config:'პარამეტრები'};
+var ST={'new':'ახალი',ok:'დადასტურებული',done:'შესრულებული',no:'გაუქმებული'};
+var COLORS={'--lilac':'იასამნისფერი','--pink':'ვარდისფერი','--mint':'მინტისფერი','--butter':'ყვითელი'};
+var ICONS={'i-scissors':'მაკრატელი','i-polish':'ლაქი','i-lipstick':'პომადა','i-sparkle':'ბრჭყვიალა'};
+
+async function api(m,u,b){
+  var r=await fetch(u,{method:m,headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined});
+  if(r.status===401&&u.indexOf('login')<0){showLogin();throw 0}
+  if(!r.ok)throw new Error(r.status);
+  return r.json();
+}
+function toast(t){var e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(function(){e.classList.remove('on')},1800)}
+function showLogin(){$('#app').hidden=true;$('#login').hidden=false;$('#pw').value=''}
+async function load(){D=await api('GET','/api/admin/data');$('#login').hidden=true;$('#app').hidden=false;render()}
+
+function getP(p){return p.split('.').reduce(function(o,k){return o[k]},D)}
+function setP(p,v){var a=p.split('.'),o=D;for(var i=0;i<a.length-1;i++)o=o[a[i]];o[a[a.length-1]]=v}
+var pend={};
+function dirty(k){pend[k]=1;clearTimeout(timers[k]);timers[k]=setTimeout(function(){flush(k)},600)}
+async function flush(k){if(!pend[k])return;delete pend[k];try{await api('PUT','/api/admin/'+k,{value:D[k]});toast('შენახულია ✓')}catch(e){pend[k]=1;toast('შეცდომა: ვერ შეინახა')}}
+document.addEventListener('visibilitychange',function(){if(document.visibilityState!=='hidden')return;Object.keys(pend).forEach(function(k){fetch('/api/admin/'+k,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({value:D[k]}),keepalive:true});delete pend[k]})});
+
+var val=function(p){return esc(getP(p))};
+var inp=function(p,ph,t){return '<input data-k="'+p+'" value="'+val(p)+'" placeholder="'+ph+'"'+(t?' type="'+t+'"':'')+'>'};
+var area=function(p,ph){return '<textarea data-k="'+p+'" placeholder="'+ph+'">'+val(p)+'</textarea>'};
+var sel=function(p,o,n){return '<select data-k="'+p+'"'+(n?' data-n="1"':'')+'>'+Object.keys(o).map(function(k){return '<option value="'+k+'"'+(String(getP(p))===k?' selected':'')+'>'+o[k]+'</option>'}).join('')+'</select>'};
+var del=function(p){return '<button class="btn d" data-a="del" data-p="'+p+'">წაშლა</button>'};
+var head=function(t,extra){return '<div class="vh"><h2>'+t+'</h2><div class="row" style="flex:none">'+(extra||'')+'</div></div>'};
+var upl=function(target,label){return '<label class="btn s">'+label+'<input type="file" accept="image/*" data-up="'+target+'" hidden></label>'};
+
+var V={
+  bookings:function(){
+    var n=D.bookings.filter(function(b){return b.status==='new'}).length;
+    return head('ჩაწერები'+(n?' ('+n+' ახალი)':''))+(D.bookings.length?D.bookings.map(function(b,i){
+      return '<div class="card '+esc(b.status)+'"><div class="row"><b>'+esc(b.name)+'</b><span class="muted">'+esc(new Date(b.created).toLocaleString('ka-GE'))+'</span></div>'+
+      '<div>'+esc((b.services||[]).join(', '))+'</div><div class="muted">სასურველი დრო: '+esc(b.day)+', '+esc(b.time)+'</div>'+
+      '<div class="row">'+sel('bookings.'+i+'.status',ST)+'<button class="btn s" data-a="addclient" data-p="'+i+'">კლიენტად დამატება</button>'+del('bookings.'+i)+'</div></div>';
+    }).join(''):'<p class="empty">ჯერ ჩაწერები არ არის. როცა სტუმარი საიტზე დაჯავშნის, აქ გამოჩნდება.</p>');
+  },
+  clients:function(){
+    return head('კლიენტები ('+D.clients.length+')','<button class="btn s" data-a="export">CSV ჩამოტვირთვა</button><button class="btn" data-a="add" data-p="clients" data-t="client">+ კლიენტი</button>')+
+    '<div class="card"><input id="q" placeholder="ძებნა სახელით ან ნომრით"></div>'+
+    (D.clients.length?D.clients.map(function(c,i){
+      var d=(c.phone||'').replace(/\D/g,'');
+      return '<div class="card" data-s="'+esc((c.name+' '+c.phone).toLowerCase())+'"><div class="row">'+inp('clients.'+i+'.name','სახელი')+inp('clients.'+i+'.phone','ტელეფონი','tel')+'</div>'+area('clients.'+i+'.note','შენიშვნა (ალერგია, საყვარელი სერვისი, ფერის ფორმულა...)')+
+      '<div class="row"><span class="muted">დამატებულია: '+esc((c.created||'').slice(0,10))+'</span>'+(d?'<a class="btn s" href="https://wa.me/'+d+'" target="_blank" rel="noopener">WhatsApp</a>':'')+del('clients.'+i)+'</div></div>';
+    }).join(''):'<p class="empty">კლიენტების სია ცარიელია.</p>');
+  },
+  cats:function(){
+    return head('სერვისები და ფასები','<button class="btn" data-a="add" data-p="cats" data-t="cat">+ კატეგორია</button>')+D.cats.map(function(c,i){
+      return '<div class="card"><div class="row">'+inp('cats.'+i+'.title','კატეგორიის სახელი')+sel('cats.'+i+'.c',COLORS)+sel('cats.'+i+'.icon',ICONS)+del('cats.'+i)+'</div>'+
+      c.items.map(function(it,j){var p='cats.'+i+'.items.'+j;return '<div class="item">'+inp(p+'.0','სერვისი')+inp(p+'.1','აღწერა')+inp(p+'.2','ფასი, მაგ. 60 ₾')+del(p)+'</div>'}).join('')+
+      '<div><button class="btn s" data-a="add" data-p="cats.'+i+'.items" data-t="item">+ სერვისი</button></div></div>';
+    }).join('');
+  },
+  gallery:function(){
+    return head('გალერეა',upl('gal','+ ფოტოს დამატება'))+(D.gallery.length?'<div class="gal">'+D.gallery.map(function(g,i){
+      return '<div class="card">'+(g.image?'<img class="pic" src="'+esc(g.image)+'" alt="" loading="lazy">':'<div class="pic">ფოტო არ არის</div>')+inp('gallery.'+i+'.label','წარწერა')+
+      '<div class="row">'+upl('gallery.'+i+'.image','ფოტო')+del('gallery.'+i)+'</div></div>';
+    }).join('')+'</div>':'<p class="empty">ფოტოები არ არის.</p>');
+  },
+  reviews:function(){
+    return head('შეფასებები','<button class="btn" data-a="add" data-p="reviews" data-t="review">+ შეფასება</button>')+D.reviews.map(function(r,i){
+      return '<div class="card">'+inp('reviews.'+i+'.name','სახელი და სერვისი')+area('reviews.'+i+'.text','ტექსტი')+
+      '<div class="row">'+sel('reviews.'+i+'.stars',{1:'★',2:'★★',3:'★★★',4:'★★★★',5:'★★★★★'},1)+
+      '<label class="row" style="flex:0 0 auto"><input type="checkbox" data-k="reviews.'+i+'.visible"'+(r.visible!==false?' checked':'')+'> საიტზე ჩანს</label>'+del('reviews.'+i)+'</div></div>';
+    }).join('');
+  },
+  config:function(){
+    var f=function(k,l,ph,t){return '<label class="fl">'+l+inp('config.'+k,ph,t)+'</label>'};
+    return head('პარამეტრები')+'<div class="card">'+f('name','სალონის სახელი','მაგ. სალონი ლია')+f('phone','ტელეფონი','+995555123456','tel')+f('address','მისამართი','მირიან მეფის ქ. 12, თბილისი')+
+    f('hoursWeek','ორშაბათი–პარასკევი','10:00–20:00')+f('hoursSat','შაბათი','10:00–19:00')+f('hoursSun','კვირა','12:00–18:00')+f('instagram','Instagram ბმული','https://instagram.com/...')+'</div>'+
+    '<div class="card"><b>მთავარი ფოტო</b>'+(D.config.heroImage?'<img class="pic" style="max-width:240px" src="'+esc(D.config.heroImage)+'" alt="">':'<p class="muted">ფოტო არ არის. საიტზე ნაჩვენები იქნება ილუსტრაცია.</p>')+
+    '<div class="row">'+upl('hero','ფოტოს ატვირთვა')+(D.config.heroImage?'<button class="btn d" data-a="clearhero">წაშლა</button>':'')+'</div></div>'+
+    '<p class="muted">პაროლის შესაცვლელად სერვერზე შეცვალე ADMIN_PASSWORD და გადატვირთე.</p>';
+  }
+};
+function render(){
+  var n=D.bookings.filter(function(b){return b.status==='new'}).length;
+  $('#tabs').innerHTML=Object.keys(TABS).map(function(k){return '<button class="tab'+(k===T?' on':'')+'" data-a="tab" data-p="'+k+'">'+TABS[k]+(k==='bookings'&&n?'<b>'+n+'</b>':'')+'</button>'}).join('');
+  $('#view').innerHTML=V[T]();
+  var tb=$('#tabs'),on=tb.querySelector('.on');if(on)tb.scrollLeft=on.offsetLeft-(tb.clientWidth-on.offsetWidth)/2;
+}
+
+document.addEventListener('input',function(e){
+  var t=e.target;
+  if(t.id==='q'){var q=t.value.toLowerCase();document.querySelectorAll('[data-s]').forEach(function(c){c.hidden=c.dataset.s.indexOf(q)<0});return}
+  var k=t.dataset.k;if(!k)return;
+  setP(k,t.type==='checkbox'?t.checked:(t.dataset.n?+t.value:t.value));
+  dirty(k.split('.')[0]);
+  if(k.indexOf('.status')>0)render();
+});
+document.addEventListener('click',async function(e){
+  var b=e.target.closest('[data-a]');if(!b)return;
+  var a=b.dataset.a,p=b.dataset.p;
+  if(a==='tab'){T=p;render();window.scrollTo(0,0);return}
+  if(a==='logout'){try{await api('POST','/api/admin/logout')}catch(x){}showLogin();return}
+  if(a==='del'){
+    if(!confirm('ნამდვილად გსურს წაშლა?'))return;
+    var parts=p.split('.'),idx=+parts.pop();getP(parts.join('.')).splice(idx,1);dirty(parts[0]);render();return;
+  }
+  if(a==='add'){
+    var t=b.dataset.t,o={
+      client:{id:uid(),name:'',phone:'',note:'',created:new Date().toISOString()},
+      cat:{id:uid(),title:'ახალი კატეგორია',c:'--lilac',icon:'i-sparkle',items:[]},
+      item:['','',''],
+      review:{id:uid(),name:'',text:'',stars:5,visible:true}
+    }[t];
+    var arr=getP(p);t==='client'||t==='review'?arr.unshift(o):arr.push(o);dirty(p.split('.')[0]);render();return;
+  }
+  if(a==='addclient'){
+    var bk=D.bookings[+p];
+    if(D.clients.some(function(c){return c.name===bk.name})){toast('ეს კლიენტი უკვე არის სიაში');return}
+    D.clients.unshift({id:uid(),name:bk.name,phone:'',note:'',created:new Date().toISOString()});dirty('clients');toast('დაემატა კლიენტებში');return;
+  }
+  if(a==='clearhero'){D.config.heroImage='';dirty('config');render();return}
+  if(a==='export'){
+    var rows=[['სახელი','ტელეფონი','შენიშვნა']].concat(D.clients.map(function(c){return [c.name,c.phone,c.note]}));
+    var csv='\ufeff'+rows.map(function(r){return r.map(function(x){return '"'+String(x||'').replace(/"/g,'""')+'"'}).join(',')}).join('\n');
+    var l=document.createElement('a');l.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));l.download='clients.csv';l.click();
+  }
+});
+
+function resize(file,max){
+  return new Promise(function(res,rej){
+    var i=new Image();i.onload=function(){
+      var k=Math.min(1,max/Math.max(i.width,i.height)),c=document.createElement('canvas');
+      c.width=Math.round(i.width*k);c.height=Math.round(i.height*k);c.getContext('2d').drawImage(i,0,0,c.width,c.height);
+      URL.revokeObjectURL(i.src);res(c.toDataURL('image/jpeg',.8));
+    };i.onerror=rej;i.src=URL.createObjectURL(file);
+  });
+}
+document.addEventListener('change',async function(e){
+  var f=e.target.files&&e.target.files[0],u=e.target.dataset.up;if(!f||!u)return;
+  toast('იტვირთება…');
+  try{
+    var r=await api('POST','/api/admin/upload',{dataUrl:await resize(f,1200)});
+    if(u==='gal'){D.gallery.push({id:uid(),label:'',image:r.url});dirty('gallery')}
+    else if(u==='hero'){D.config.heroImage=r.url;dirty('config')}
+    else{setP(u,r.url);dirty(u.split('.')[0])}
+    render();
+  }catch(x){toast('ატვირთვა ვერ მოხერხდა')}
+  e.target.value='';
+});
+$('#lf').addEventListener('submit',async function(e){
+  e.preventDefault();$('#le').textContent='';
+  try{await api('POST','/api/admin/login',{password:$('#pw').value});await load()}
+  catch(x){$('#le').textContent='პაროლი არასწორია ან ძალიან ბევრი მცდელობაა.'}
+});
+load().catch(function(){showLogin()});
+</script>
+</body>
+</html>
